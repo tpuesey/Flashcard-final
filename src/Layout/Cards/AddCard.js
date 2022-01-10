@@ -46,7 +46,7 @@ export default function AddCard() {
         </ol>
       </nav>
       <h1>{deck.name}: AddCard</h1>
-      <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit}>
         <div className="form-group">
           <label htmlFor="front">
             <h4>Front</h4>
@@ -79,10 +79,10 @@ export default function AddCard() {
         </div>
         <div className="mb-3">
           <Link to={`/decks/${deckId}`}>
-            <button className="btn btn-secondary mr-2">Done</button>
+            <button className="btn btn-secondary mr-2">Cancel</button>
           </Link>
           <button type="submit" className="btn btn-primary">
-            Save
+            Submit
           </button>
         </div>
       </form>
