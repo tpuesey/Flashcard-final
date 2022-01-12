@@ -8,84 +8,73 @@ export default function AddCard() {
   const [deck, setDeck] = useState({});
   const { deckId } = useParams();
 
-  const handleChange = (event) => {
-    setFormData({ ...formData, [event.target.name]: event.target.value });
+  const handleChange = ({ target }) => {
+    setCard({
+      ...card,
+      [target.name]: target.value,
+    });
   };
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    await createCard(deckId, formData);
-    setFormData(initialState);
-  };
-  
   useEffect(() => {
     const abortController = new AbortController();
-    const loadDeck = async () => {
-      const loadedDeck = await readDeck(deckId, abortController.signal);
-      setDeck(() => loadedDeck);
-    };
-    loadDeck();
+
+    async function getDeck() {
+      try {
+        let result = await readDeck(deckId, abortController.signal);
+        setDeck(result);
+      } catch (error) {
+        throw error;
+      }
+    }
+    getDeck();
+
     return () => abortController.abort();
   }, [deckId]);
 
+  const submitHandler = (event) => {
+    event.preventDefault();
+
+    setCard({ front: card.front, back: card.back });
+    const abortController = new AbortController();
+
+    try {
+      async function CreateCard() {
+        let result = await createCard(deckId, card, abortController.signal);
+
+        setUpdated(result);
+      }
+      CreateCard();
+    } catch (error) {
+      throw error;
+    }
+    setCard({ front: "", back: "" });
+  };
+
   return (
-    <div>
+    <>
+      {" "}
       <nav aria-label="breadcrumb">
         <ol className="breadcrumb">
-          <li className="breadcrumb-item text-primary">
-            <Link to="/">
-              Home
+          <li className="breadcrumb-item">
+            <Link to={"/"}>
+              <HouseFill /> &nbsp;Home
             </Link>
           </li>
-          <li className="breadcrumb-item text-primary">
+          <li className="breadcrumb-item">
             <Link to={`/decks/${deckId}`}>{deck.name}</Link>
           </li>
           <li className="breadcrumb-item active" aria-current="page">
-            Add Card
+            <Link to={url}>Add Card</Link>
           </li>
         </ol>
       </nav>
-      <h1>{deck.name}: AddCard</h1>
-            <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label htmlFor="front">
-            <h4>Front</h4>
-          </label>
-          <textarea
-            name="front"
-            style={{ resize: "none" }}
-            rows="3"
-            className="form-control"
-            value={formData.front}
-            placeholder="Front side of card"
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label htmlFor="back">
-            <h4>Back</h4>
-          </label>
-          <textarea
-            name="back"
-            style={{ resize: "none" }}
-            rows="3"
-            className="form-control"
-            value={formData.back}
-            placeholder="Back side of card"
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <div className="mb-3">
-          <Link to={`/decks/${deckId}`}>
-            <button className="btn btn-secondary mr-2">Cancel</button>
-          </Link>
-          <button type="submit" className="btn btn-primary">
-            Submit
-          </button>
-        </div>
-      </form>
-    </div>
+      <h2>{deck.name}: Add Card</h2>
+      <CardForm
+        handleChange={handleChange}
+        submitHandler={submitHandler}
+        card={card}
+        deck={deck}
+      />
+    </>
   );
 }
